@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:,">
+  <title>Copilot Credit and PAYG</title>
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--cp-bg); color: var(--cp-text); font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif; }
+    main { max-width: 1550px; margin: 0 auto; padding: 28px; }
+    header { display: flex; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+    h1 { margin: 0 0 5px; font-size: clamp(1.7rem, 3vw, 2.45rem); letter-spacing: -0.03em; }
+    h2 { margin: 0; font-size: 1.15rem; }
+    p { margin: 0; color: var(--cp-text-muted); }
+    .stamp { text-align: right; color: var(--cp-text-muted); font-size: 0.82rem; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 18px; }
+    .card, .panel { background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 16px; box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border); }
+    .card { padding: 17px; }
+    .label { color: var(--cp-text-muted); font-size: 0.74rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+    .metric { margin-top: 4px; font-size: 1.65rem; font-weight: 750; }
+    .detail { margin-top: 3px; color: var(--cp-text-soft); font-size: 0.8rem; }
+    .panel { overflow: hidden; }
+    .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--cp-border); }
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 18px; background: var(--cp-bg-elevated); border-bottom: 1px solid var(--cp-border); }
+    input, select { min-height: 38px; padding: 8px 10px; background: var(--cp-surface); color: var(--cp-text); border: 1px solid var(--cp-border-strong); border-radius: 0.625rem; font: inherit; }
+    input { flex: 1 1 280px; }
+    select { flex: 0 1 210px; }
+    .pill { display: inline-flex; padding: 3px 8px; border-radius: 0.625rem; border: 1px solid var(--cp-border); background: var(--cp-surface-soft); font-size: 0.78rem; }
+    .table-wrap { overflow: auto; max-height: 690px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid var(--cp-border); text-align: left; vertical-align: middle; }
+    th { position: sticky; top: 0; z-index: 2; background: var(--cp-surface-soft); color: var(--cp-text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+    tbody tr:hover { background: var(--cp-accent-soft); }
+    .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .mono { font-family: Consolas, "Courier New", Courier, monospace; font-size: 0.75rem; color: var(--cp-text-muted); }
+    .yes { color: var(--cp-success); font-weight: 700; }
+    .no { color: var(--cp-text-muted); }
+    .bad { color: var(--cp-danger); font-weight: 700; }
+    .active { color: var(--cp-accent); font-weight: 700; }
+    .note { padding: 12px 18px; background: var(--cp-bg-elevated); color: var(--cp-text-muted); border-top: 1px solid var(--cp-border); font-size: 0.8rem; }
+    @media (max-width: 1100px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 620px) { main { padding: 16px; } header { display: block; } .stamp { margin-top: 10px; text-align: left; } .cards { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Copilot credit &amp; PAYG</h1>
+        <p>All environments in __TENANT_DOMAIN__</p>
+      </div>
+      <div class="stamp"><strong>Reporting period</strong><br>__FROM_DATE__ through __TO_DATE__</div>
+    </header>
+    <section class="cards" id="cards"></section>
+    <section class="panel">
+      <div class="panel-head"><h2>Environment detail</h2><span class="pill" id="count"></span></div>
+      <div class="filters">
+        <input id="search" type="search" placeholder="Search environment, ID, region, or policy…">
+        <select id="paygo"><option value="">All PAYG states</option><option value="true">PAYG configured</option><option value="false">PAYG not configured</option></select>
+        <select id="activity"><option value="">All environments</option><option value="used">Has consumption</option><option value="set">Has allocation set</option><option value="failed">Query failed</option></select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Environment</th><th>Type / region</th>
+              <th class="num">AI set</th><th class="num">AI consumed</th>
+              <th class="num">Messages set</th><th class="num">Auto-set</th><th class="num">Licensed used</th>
+              <th>PAYG configured</th><th class="num">PAYG used</th>
+              <th class="num">Sessions set</th><th class="num">Sessions used</th><th>Query</th>
+            </tr>
+          </thead>
+          <tbody id="body"></tbody>
+        </table>
+      </div>
+      <div class="note">“Set” values come from tenant currency allocations. “Licensed used” and “PAYG used” come from environment entitlement snapshots. PAYG configured means an enabled MCSMessages entitlement exists on a tenant billing policy linked to the environment.</div>
+    </section>
+    <section class="panel" style="margin-top:18px">
+      <div class="panel-head"><h2>MCS messages by Copilot resource</h2><span class="pill" id="resource-count"></span></div>
+      <div class="filters">
+        <input id="resource-search" type="search" placeholder="Search Copilot resource, environment, feature, or ID…">
+        <select id="resource-activity"><option value="">All resources</option><option value="used">Has billable consumption</option><option value="nonbillable">Has nonbillable consumption</option><option value="failed">Query failed</option></select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Copilot resource</th><th>Environment</th><th>Features</th><th class="num">Users</th><th class="num">Consumed</th><th class="num">Nonbillable</th><th>As of</th><th>Query</th></tr></thead>
+          <tbody id="resource-body"></tbody>
+        </table>
+      </div>
+      <div class="note">This table comes from <span class="mono">pac licensing get-tenant-user-consumption-by-resource</span> for MCSMessages, __FROM_DATE__ through __TO_DATE__. Synthetic or unattributed user records may not be expandable through the resource API.</div>
+    </section>
+    <section class="panel" style="margin-top:18px">
+      <div class="panel-head"><h2>MCS messages by user</h2><span class="pill" id="user-count"></span></div>
+      <div class="filters">
+        <input id="user-search" type="search" placeholder="Search user ID or attribution…">
+        <select id="user-activity"><option value="">All users</option><option value="used">Has billable consumption</option><option value="nonbillable">Has nonbillable consumption</option><option value="unattributed">Unattributed or system</option></select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>User ID</th><th>Attribution</th><th class="num">Resources</th><th class="num">Consumed</th><th class="num">Nonbillable</th><th>Unit</th><th>As of</th></tr></thead>
+          <tbody id="user-body"></tbody>
+        </table>
+      </div>
+      <div class="note">This table comes from <span class="mono">pac licensing get-tenant-users --entitlement-id MCSMessages</span> for __FROM_DATE__ through __TO_DATE__. PAC returns Entra object IDs rather than display names.</div>
+    </section>
+  </main>
+  <script id="report-data" type="application/json">__REPORT_DATA__</script>
+  <script id="resource-data" type="application/json">__RESOURCE_DATA__</script>
+  <script id="user-data" type="application/json">__USER_DATA__</script>
+  <script>
+    const data = JSON.parse(document.getElementById("report-data").textContent);
+    const resources = JSON.parse(document.getElementById("resource-data").textContent);
+    const users = JSON.parse(document.getElementById("user-data").textContent);
+    const n = value => Number(value || 0);
+    const fmt = value => new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(n(value));
+    const esc = value => String(value ?? "—").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+    const sum = key => data.reduce((total, row) => total + n(row[key]), 0);
+    const cards = [
+      ["Environments", data.length, `${data.filter(row => row.QueryStatus === "Success").length} queried successfully`],
+      ["PAYG configured", data.filter(row => row.PAYG_Configured).length, "Linked through billing policies"],
+      ["Copilot messages set", fmt(sum("CopilotMessages_Set") + sum("CopilotMessages_AutoSet")), `${fmt(sum("CopilotMessages_AutoSet"))} auto-set`],
+      ["Licensed messages used", fmt(sum("CopilotMessages_Consumed")), "Environment entitlement usage"],
+      ["PAYG messages used", fmt(sum("CopilotMessages_PAYG_Consumed")), "Environment entitlement usage"],
+      ["User-level messages", fmt(users.reduce((total, row) => total + n(row.Consumed), 0)), `${users.length} user records`],
+      ["Mapped resources", fmt(resources.reduce((total, row) => total + n(row.Consumed), 0)), `${resources.length} Copilot resources`],
+      ["Nonbillable messages", fmt(users.reduce((total, row) => total + n(row.NonBillable), 0)), "Reported user-level usage"]
+    ];
+    document.getElementById("cards").innerHTML = cards.map(([label, value, detail]) =>
+      `<article class="card"><div class="label">${esc(label)}</div><div class="metric">${esc(value)}</div><div class="detail">${esc(detail)}</div></article>`
+    ).join("");
+
+    const hasConsumption = row => ["AI_Consumed", "AI_PAYG_Consumed", "CopilotMessages_Consumed", "CopilotMessages_PAYG_Consumed", "CopilotSessions_Consumed", "CopilotSessions_PAYG_Consumed"].some(key => n(row[key]) > 0);
+    const hasAllocation = row => ["AI_Set", "AI_AutoSet", "CopilotMessages_Set", "CopilotMessages_AutoSet", "CopilotSessions_Set", "CopilotSessions_AutoSet"].some(key => n(row[key]) > 0);
+    function render() {
+      const query = document.getElementById("search").value.trim().toLowerCase();
+      const paygo = document.getElementById("paygo").value;
+      const activity = document.getElementById("activity").value;
+      const rows = data.filter(row => {
+        const haystack = [row.EnvironmentName, row.EnvironmentId, row.Type, row.Region, row.PAYG_Policies].join(" ").toLowerCase();
+        const paygoMatch = !paygo || String(Boolean(row.PAYG_Configured)) === paygo;
+        const activityMatch = !activity || (activity === "used" && hasConsumption(row)) || (activity === "set" && hasAllocation(row)) || (activity === "failed" && row.QueryStatus === "Failed");
+        return (!query || haystack.includes(query)) && paygoMatch && activityMatch;
+      }).sort((a, b) => n(b.CopilotMessages_PAYG_Consumed) - n(a.CopilotMessages_PAYG_Consumed) || n(b.CopilotMessages_Consumed) - n(a.CopilotMessages_Consumed) || a.EnvironmentName.localeCompare(b.EnvironmentName));
+      document.getElementById("count").textContent = `${rows.length} of ${data.length}`;
+      document.getElementById("body").innerHTML = rows.map(row => `
+        <tr>
+          <td><strong>${esc(row.EnvironmentName)}</strong><br><span class="mono">${esc(row.EnvironmentId)}</span>${row.PAYG_Policies ? `<br><span class="mono">${esc(row.PAYG_Policies)}</span>` : ""}</td>
+          <td>${esc(row.Type)}<br><span class="mono">${esc(row.Region)}</span></td>
+          <td class="num">${fmt(row.AI_Set + row.AI_AutoSet)}</td>
+          <td class="num ${n(row.AI_Consumed) + n(row.AI_PAYG_Consumed) > 0 ? "active" : ""}">${fmt(n(row.AI_Consumed) + n(row.AI_PAYG_Consumed))}</td>
+          <td class="num">${fmt(row.CopilotMessages_Set)}</td>
+          <td class="num">${fmt(row.CopilotMessages_AutoSet)}</td>
+          <td class="num ${n(row.CopilotMessages_Consumed) > 0 ? "active" : ""}">${fmt(row.CopilotMessages_Consumed)}</td>
+          <td class="${row.PAYG_Configured ? "yes" : "no"}">${row.PAYG_Configured ? "Yes" : "No"}</td>
+          <td class="num ${n(row.CopilotMessages_PAYG_Consumed) > 0 ? "active" : ""}">${fmt(row.CopilotMessages_PAYG_Consumed)}</td>
+          <td class="num">${fmt(n(row.CopilotSessions_Set) + n(row.CopilotSessions_AutoSet))}</td>
+          <td class="num ${n(row.CopilotSessions_Consumed) + n(row.CopilotSessions_PAYG_Consumed) > 0 ? "active" : ""}">${fmt(n(row.CopilotSessions_Consumed) + n(row.CopilotSessions_PAYG_Consumed))}</td>
+          <td class="${row.QueryStatus === "Success" ? "yes" : "bad"}">${esc(row.QueryStatus)}</td>
+        </tr>`).join("");
+    }
+    ["search", "paygo", "activity"].forEach(id => document.getElementById(id).addEventListener("input", render));
+    render();
+
+    function renderResources() {
+      const query = document.getElementById("resource-search").value.trim().toLowerCase();
+      const activity = document.getElementById("resource-activity").value;
+      const rows = resources.filter(row => {
+        const haystack = [row.ResourceName, row.ResourceId, row.Environments, row.Features].join(" ").toLowerCase();
+        const activityMatch = !activity ||
+          (activity === "used" && n(row.Consumed) > 0) ||
+          (activity === "nonbillable" && n(row.NonBillable) > 0) ||
+          (activity === "failed" && row.QueryStatus === "Failed");
+        return (!query || haystack.includes(query)) && activityMatch;
+      });
+      document.getElementById("resource-count").textContent = `${rows.length} of ${resources.length}`;
+      document.getElementById("resource-body").innerHTML = rows.map(row => `
+        <tr>
+          <td><strong>${esc(row.ResourceName)}</strong><br><span class="mono">${esc(row.ResourceId)}</span></td>
+          <td>${esc(row.Environments)}<br><span class="mono">${esc(row.EnvironmentCount)} environment(s)</span></td>
+          <td>${esc(row.Features)}</td>
+          <td class="num">${fmt(row.UserCount)}</td>
+          <td class="num ${n(row.Consumed) > 0 ? "active" : ""}">${fmt(row.Consumed)}</td>
+          <td class="num">${fmt(row.NonBillable)}</td>
+          <td>${esc(row.AsOfDate)}</td>
+          <td class="${row.QueryStatus === "Success" ? "yes" : "bad"}">${esc(row.QueryStatus)}</td>
+        </tr>`).join("");
+    }
+    ["resource-search", "resource-activity"].forEach(id => document.getElementById(id).addEventListener("input", renderResources));
+    renderResources();
+
+    function renderUsers() {
+      const query = document.getElementById("user-search").value.trim().toLowerCase();
+      const activity = document.getElementById("user-activity").value;
+      const rows = users.filter(row => {
+        const haystack = [row.UserId, row.Attribution].join(" ").toLowerCase();
+        const activityMatch = !activity ||
+          (activity === "used" && n(row.Consumed) > 0) ||
+          (activity === "nonbillable" && n(row.NonBillable) > 0) ||
+          (activity === "unattributed" && row.Attribution !== "User");
+        return (!query || haystack.includes(query)) && activityMatch;
+      });
+      document.getElementById("user-count").textContent = `${rows.length} of ${users.length}`;
+      document.getElementById("user-body").innerHTML = rows.map(row => `
+        <tr>
+          <td class="mono">${esc(row.UserId)}</td>
+          <td class="${row.Attribution === "User" ? "yes" : "active"}">${esc(row.Attribution)}</td>
+          <td class="num">${fmt(row.ResourceCount)}</td>
+          <td class="num ${n(row.Consumed) > 0 ? "active" : ""}">${fmt(row.Consumed)}</td>
+          <td class="num">${fmt(row.NonBillable)}</td>
+          <td>${esc(row.Unit)}</td>
+          <td>${esc(row.AsOfDate)}</td>
+        </tr>`).join("");
+    }
+    ["user-search", "user-activity"].forEach(id => document.getElementById(id).addEventListener("input", renderUsers));
+    renderUsers();
+  </script>
+</body>
+</html>
